@@ -30,16 +30,17 @@ class _OptionBuilder:
         self.__prefs['download.directory_upgrade'] = is_download_directory_set
         self.__logger.info(f'download directory upgrade set to {is_download_directory_set}')
 
-    def set_automatic_downloads(self, active_automatic_downloads: bool):
-        if active_automatic_downloads:
+    def set_allow_multiple_downloads(self, allow_multiple_downloads: bool):
+        if allow_multiple_downloads:
             self.__prefs['profile.default_content_setting_values.automatic_downloads'] = 1
-        elif not active_automatic_downloads:
-            self.__prefs['profile.default_content_setting_values.automatic_downloads'] = 0
-        else:
-            raise ValueError(f'automatic downloads set failed')
 
-        self.__logger.info(
-            f'automatic downloads set to {self.__prefs['profile.default_content_setting_values.automatic_downloads']}')
+            self.__logger.info('multiple downloads allowed')
+        elif not allow_multiple_downloads:
+            self.__prefs['profile.default_content_setting_values.automatic_downloads'] = 0
+
+            self.__logger.info('multiple downloads disallowed')
+        else:
+            raise ValueError(f'set allow multiple downloads failed')
 
     def set_headless(self):
         self.__options.add_argument('--headless=new')
@@ -53,9 +54,15 @@ class _OptionBuilder:
         self.__options.add_argument('--disable-gpu')
         self.__logger.info('set disable gpu')
 
-    def set_disable_notifications(self):
-        self.__options.add_argument('--disable-notifications')
-        self.__logger.info('set disable notifications')
+    def set_notifications(self, active_notifications: bool):
+        if active_notifications:
+            self.__options.add_argument('--notifications')
+            self.__logger.info('notifications enabled')
+        elif not active_notifications:
+            self.__options.add_argument('--disable-notifications')
+            self.__logger.info('notifications disabled')
+        else:
+            raise ValueError('notifications set failed')
 
     def build(self):
         self.__logger.info('building options')
