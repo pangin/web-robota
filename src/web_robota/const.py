@@ -1,0 +1,2 @@
+FILE_EXTENSION_CRDOWNLOAD = '.crdownload'
+FILE_EXTENSION_TMP = '.tmp'

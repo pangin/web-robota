@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling", "hatch-requirements-txt"]
+build-backend = "hatchling.build"
+
+[project]
+name = "web_robota"
+version = "0.0.1"
+authors = [
+    { name = "pangin", email = "chrono3412@gmail.com" },
+]
+description = "Python Web Automation Module"
+readme = "README.md"
+requires-python = ">=3.13"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = { file = "LICENSE" }
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
+
+[project.optional-dependencies]
+dev = ["pytest", "black"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/", "README.md"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/web_robota"]
+
+[project.urls]
+Homepage = "https://github.com/pangin/web-robota"
+Issues = "https://github.com/pangin/web-robota/issues"
