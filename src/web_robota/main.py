@@ -54,7 +54,19 @@ class WebRobota:
         self.__driver.execute_cdp_cmd('Browser.setDownloadBehavior', change_download_path_params)
         self.__logger.info(f'download path changed to {download_path}')
 
+    def get_current_url(self):
+        current_url = self.__driver.current_url
+
+        self.__logger.info(f'current url : {current_url}')
+
+        return current_url
+
     def go_to(self, url: str, timeout_seconds: int = SimpleInstruction.timeout):
+        if url == self.get_current_url():
+            self.__logger.info(f'already at {url}')
+
+            return
+
         self.__logger.info(f'traveling to {url}')
         self.__driver.get(url=url)
         self.wait.for_site_load_complete(timeout_seconds=timeout_seconds)
@@ -63,11 +75,33 @@ class WebRobota:
         @timeout(instruction.timeout)
         def do_find_element():
             self.wait.for_element(instruction)
+
             element = self.__driver.find_element(By.XPATH, instruction.element['xpath'])
 
             return element
 
-        do_find_element()
+        return do_find_element()
+
+    def find_elements(self, instructions: list[SimpleInstruction] | SimpleInstruction):
+        if type(instructions) != list:
+            @timeout(instructions.timeout)
+            def do_find_elements():
+                self.wait.for_element(instructions)
+
+                elements = self.__driver.find_elements(By.XPATH, instructions.element['xpath'])
+
+                return elements
+
+            return do_find_elements()
+
+        elements = []
+
+        for instruction in instructions:
+            element = self.find_element(instruction)
+
+            elements.append(element)
+
+        return elements
 
     def click(self, instruction: SimpleInstruction):
         @timeout(instruction.timeout)
@@ -110,7 +144,10 @@ class WebRobota:
         self.__logger.info(f'clicking on {len(instructions)} elements')
 
         for instruction in instructions:
-            self.click(instruction)
+            try:
+                self.click(instruction)
+            except Exception:
+                self.__logger.warning(f'failed to click on {instruction.element['name']}')
 
     def input(self, instruction: SimpleInstruction):
         self.__logger.info(f'inputting on {instruction.element['name']}')
@@ -149,7 +186,10 @@ class WebRobota:
         self.__logger.info(f'inputting on {len(instructions)} elements')
 
         for instruction in instructions:
-            self.input(instruction)
+            try:
+                self.input(instruction)
+            except Exception:
+                self.__logger.error(f'failed to input on {instruction.element['name']}')
 
     def clear_input(self, instruction: SimpleInstruction):
         self.__logger.info(f'clearing input on {instruction.element['name']}')
@@ -163,7 +203,10 @@ class WebRobota:
         self.__logger.info(f'clearing inputs on {len(instructions)} elements')
 
         for instruction in instructions:
-            self.clear_input(instruction)
+            try:
+                self.clear_input(instruction)
+            except Exception:
+                self.__logger.error(f'failed to clear input on {instruction.element['name']}')
 
     def clear_one_of_inputs(self, instructions: list[SimpleInstruction]):
         self.__logger.info(f'clearing inputs on one of {len(instructions)} elements')
@@ -199,13 +242,30 @@ class WebRobota:
 
         return string_from_element
 
-    def get_strings_from_elements(self, instructions: list[SimpleInstruction]):
+    def get_strings_from_elements(self, instructions: list[SimpleInstruction] | SimpleInstruction):
+        Result = namedtuple('Result', ['instruction', 'string'])
+
+        if type(instructions) != list:
+            @timeout(instructions.timeout)
+            def do_get_strings_from_elements():
+                self.wait.for_element(instructions)
+
+                string_from_elements = []
+                elements = self.__driver.find_elements(By.XPATH, instructions.element['xpath'])
+
+                for element in elements:
+                    result = Result(instruction=instructions, string=element.text)
+                    string_from_elements.append(result)
+
+                return string_from_elements
+
+            return do_get_strings_from_elements()
+
         self.__logger.info(f'getting strings from {len(instructions)} elements')
 
         strings_from_elements = []
 
         for instruction in instructions:
-            Result = namedtuple('Result', ['instruction', 'string'])
             string_from_element = self.get_string_from_element(instruction)
             result = Result(instruction=instruction, string=string_from_element)
 

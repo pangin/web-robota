@@ -81,8 +81,6 @@ class _Wait:
     def for_elements(self, instructions: list[SimpleInstruction]):
         self.__logger.info(f'waiting for {len(instructions)} elements to appear')
 
-        valid_instruction = None
-
         for instruction in instructions:
             self.for_element(instruction)
 

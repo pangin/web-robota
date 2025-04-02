@@ -1,7 +1,7 @@
 import time
 import signal
 
-from src.web_robota import SimpleInstruction
+from .type import SimpleInstruction
 
 
 def timeout(seconds_before_timeout: int = SimpleInstruction.timeout):
